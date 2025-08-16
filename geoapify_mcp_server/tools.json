@@ -1,0 +1,1549 @@
+{
+  "name": "Geoapify",
+  "tools": [
+    {
+      "name": "forward_geocoding",
+      "description": "Convert a free-text address or place name into geographic coordinates, Returns up to 20 results",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Full address or place in free text, e.g. '1600 Amphitheatre Pkwy, Mountain View, CA' or 'Eiffel Tower Paris'"
+          },
+          "language": {
+            "type": "string",
+            "description": "Preferred response language code, e.g. 'en', 'de', 'fr'"
+          },
+          "filter": {
+            "type": "string",
+            "description": "Optional filter DSL, e.g. 'rect:minLon,minLat,maxLon,maxLat' or 'countrycode:US'"
+          },
+          "bias": {
+            "type": "string",
+            "description": "Optional bias DSL, e.g. 'point:lon,lat' or 'countrycode:US'"
+          }
+        },
+        "required": ["text"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "formatted": {
+                  "type": "string",
+                  "description": "Formatted full address"
+                },
+                "country": { "type": "string" },
+                "state": { "type": "string" },
+                "county": { "type": "string" },
+                "city": { "type": "string" },
+                "postcode": { "type": "string" },
+                "street": { "type": "string" },
+                "housenumber": { "type": "string" },
+                "lat": { "type": "number" },
+                "lon": { "type": "number" }
+              },
+              "required": ["formatted", "lat", "lon"]
+            }
+          }
+        },
+        "required": ["results"]
+      }
+    },
+    {
+      "name": "reverse_geocoding",
+      "description": "Convert coordinates to the nearest address/place. Returns up to 20 results as GeoJSON.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude"
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude"
+          },
+          "language": {
+            "type": "string",
+            "description": "Preferred response language code, e.g. 'en', 'de', 'fr'"
+          }
+        },
+        "required": ["lat", "lon"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "const": "Point" },
+                    "coordinates": {
+                      "type": "array",
+                      "items": { "type": "number" },
+                      "minItems": 2,
+                      "maxItems": 3,
+                      "description": "[lon, lat] (elevation optional)"
+                    }
+                  },
+                  "required": ["type", "coordinates"]
+                },
+                "bbox": {
+                  "type": "array",
+                  "items": { "type": "number" },
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "description": "Optional GeoJSON bbox: [west, south, east, north]"
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Place/POI name if available"
+                    },
+                    "formatted": {
+                      "type": "string",
+                      "description": "Formatted full address"
+                    },
+                    "address_line1": {
+                      "type": "string",
+                      "description": "Street + house number"
+                    },
+                    "address_line2": {
+                      "type": "string",
+                      "description": "Locality line (e.g., suburb/city/state)"
+                    },
+
+                    "street": { "type": "string" },
+                    "housenumber": { "type": "string" },
+                    "suburb": { "type": "string" },
+                    "district": { "type": "string" },
+                    "city": { "type": "string" },
+                    "county": { "type": "string" },
+                    "state": { "type": "string" },
+                    "state_code": { "type": "string" },
+                    "postcode": { "type": "string" },
+                    "country": { "type": "string" },
+                    "country_code": { "type": "string" },
+
+                    "result_type": {
+                      "type": "string",
+                      "description": "building|street|amenity|locality|..."
+                    },
+                    "rank": {
+                      "type": "object",
+                      "properties": {
+                        "importance": { "type": "number" },
+                        "popularity": { "type": "number" },
+                        "confidence": { "type": "number" },
+                        "match_type": { "type": "string" }
+                      }
+                    },
+                    "place_id": { "type": "string" },
+                    "datasource": {
+                      "type": "object",
+                      "properties": {
+                        "sourcename": { "type": "string" },
+                        "attribution": { "type": "string" },
+                        "license": { "type": "string" },
+                        "url": { "type": "string" }
+                      }
+                    }
+                  },
+                  "required": ["formatted", "country", "country_code"]
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            }
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "suggest_places",
+      "description": "Suggest addresses and places for partial text input. Returns up to 20 GeoJSON Point features.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Partial input (e.g., '1600 Amph...', 'Eiffel To...')"
+          },
+          "language": {
+            "type": "string",
+            "description": "Preferred response language code, e.g. 'en', 'de', 'fr'"
+          },
+          "filter": {
+            "type": "string",
+            "description": "Optional filter DSL, e.g. 'rect:minLon,minLat,maxLon,maxLat' or 'countrycode:US'"
+          },
+          "bias": {
+            "type": "string",
+            "description": "Optional bias DSL, e.g. 'point:lon,lat' or 'countrycode:US'"
+          }
+        },
+        "required": ["text"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "properties": {
+                    "type": { "const": "Point" },
+                    "coordinates": {
+                      "type": "array",
+                      "items": { "type": "number" },
+                      "minItems": 2,
+                      "maxItems": 3,
+                      "description": "[lon, lat] (elevation optional)"
+                    }
+                  },
+                  "required": ["type", "coordinates"]
+                },
+                "bbox": {
+                  "type": "array",
+                  "items": { "type": "number" },
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "description": "Optional GeoJSON bbox: [west, south, east, north]"
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Place/POI name if available"
+                    },
+                    "formatted": {
+                      "type": "string",
+                      "description": "Formatted full address"
+                    },
+                    "address_line1": {
+                      "type": "string",
+                      "description": "Street + house number"
+                    },
+                    "address_line2": {
+                      "type": "string",
+                      "description": "Locality line (e.g., suburb/city/state)"
+                    },
+
+                    "street": { "type": "string" },
+                    "housenumber": { "type": "string" },
+                    "suburb": { "type": "string" },
+                    "district": { "type": "string" },
+                    "city": { "type": "string" },
+                    "county": { "type": "string" },
+                    "state": { "type": "string" },
+                    "state_code": { "type": "string" },
+                    "postcode": { "type": "string" },
+                    "country": { "type": "string" },
+                    "country_code": { "type": "string" },
+
+                    "result_type": {
+                      "type": "string",
+                      "description": "building|street|amenity|locality|..."
+                    },
+                    "rank": {
+                      "type": "object",
+                      "properties": {
+                        "importance": { "type": "number" },
+                        "popularity": { "type": "number" },
+                        "confidence": { "type": "number" },
+                        "match_type": { "type": "string" }
+                      }
+                    },
+                    "place_id": { "type": "string" },
+                    "datasource": {
+                      "type": "object",
+                      "properties": {
+                        "sourcename": { "type": "string" },
+                        "attribution": { "type": "string" },
+                        "license": { "type": "string" },
+                        "url": { "type": "string" }
+                      }
+                    }
+                  },
+                  "required": ["formatted", "country", "country_code"]
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            }
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "places_search",
+      "description": "Search for places (POIs) by categories with spatial filters, bias, language, and pagination.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "categories": {
+            "type": "string",
+            "description": "Comma-separated category codes (e.g. accommodation.hotel, activity.sport_club)"
+          },
+          "filter": {
+            "type": "string",
+            "description": "Spatial filter, e.g. rect:minx,miny,maxx,maxy | circle:lon,lat,radius | place:city | countrycode:US"
+          },
+          "bias": {
+            "type": "string",
+            "description": "Bias results toward location, e.g. point:lon,lat | rect:minx,miny,maxx,maxy | countrycode:US"
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Page number for results (20 per page)"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language code (e.g. en, de, fr)"
+          },
+          "conditions": {
+            "type": "string",
+            "description": "Optional conditions (e.g. opening_hours:24/7)"
+          }
+        },
+        "required": ["categories"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["Point", "Polygon", "MultiPolygon"]
+                    },
+                    "coordinates": {
+                      "oneOf": [
+                        {
+                          "type": "array",
+                          "items": { "type": "number" },
+                          "minItems": 2,
+                          "maxItems": 3
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": { "type": "number" },
+                              "minItems": 2
+                            }
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": { "type": "number" },
+                                "minItems": 2
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "coordinates"]
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": ["string", "null"] },
+                    "name": { "type": ["string", "null"] },
+                    "country": { "type": ["string", "null"] },
+                    "state": { "type": ["string", "null"] },
+                    "city": { "type": ["string", "null"] },
+                    "street": { "type": ["string", "null"] },
+                    "postcode": { "type": ["string", "null"] },
+                    "category": { "type": ["string", "null"] },
+                    "opening_hours": { "type": ["string", "null"] }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            }
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "place_details",
+      "description": "Get details for a place by id or coordinates. Returns a single GeoJSON Feature with the ORIGINAL geometry (Point, Polygon, or MultiPolygon).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Place id from places_search/forward_geocoding"
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude"
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language code, e.g. 'en', 'de', 'fr'"
+          }
+        },
+        "oneOf": [{ "required": ["id"] }, { "required": ["lat", "lon"] }]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "Feature" },
+          "geometry": {
+            "type": "object",
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": { "const": "Point" },
+                  "coordinates": {
+                    "type": "array",
+                    "items": { "type": "number" },
+                    "minItems": 2,
+                    "maxItems": 3,
+                    "description": "[lon, lat] (optional elevation)"
+                  }
+                },
+                "required": ["type", "coordinates"]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": { "const": "Polygon" },
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": { "type": "number" },
+                        "minItems": 2
+                      }
+                    },
+                    "description": "Polygon: [[[lon,lat],...]]"
+                  }
+                },
+                "required": ["type", "coordinates"]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": { "const": "MultiPolygon" },
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": { "type": "number" },
+                          "minItems": 2
+                        }
+                      }
+                    },
+                    "description": "MultiPolygon: [[[[lon,lat],...]]]"
+                  }
+                },
+                "required": ["type", "coordinates"]
+              }
+            ]
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "formatted": { "type": "string" },
+
+              "place_id": { "type": "string" },
+              "name": { "type": "string" },
+
+              "address_line1": { "type": "string" },
+              "address_line2": { "type": "string" },
+              "street": { "type": "string" },
+              "housenumber": { "type": "string" },
+              "suburb": { "type": "string" },
+              "district": { "type": "string" },
+              "city": { "type": "string" },
+              "county": { "type": "string" },
+              "state": { "type": "string" },
+              "state_code": { "type": "string" },
+              "postcode": { "type": "string" },
+              "country": { "type": "string" },
+              "country_code": { "type": "string" }
+            },
+            "required": ["formatted"]
+          }
+        },
+        "required": ["type", "geometry", "properties"]
+      }
+    },
+    {
+      "name": "boundaries_part_of",
+      "description": "Return parent boundaries (admin/other) for a place or boundary. Always a GeoJSON FeatureCollection of area polygons.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Boundary or place id" },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude"
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude"
+          },
+          "boundaries": {
+            "type": "string",
+            "enum": [
+              "administrative",
+              "postal_code",
+              "political",
+              "low_emission_zone"
+            ],
+            "description": "Boundary class to query"
+          },
+          "sublevel": {
+            "type": "integer",
+            "description": "If set, return parents only up to this administrative level (e.g., 2=country, 4=state/region)"
+          },
+          "geometry_level": {
+            "type": "string",
+            "enum": [
+              "point",
+              "geometry_1000",
+              "geometry_5000",
+              "geometry_10000",
+              "original"
+            ],
+            "description": "Geometry simplification level for returned boundaries"
+          },
+          "language": {
+            "type": "string",
+            "description": "Response language code, e.g. 'en', 'de', 'fr'"
+          }
+        },
+        "oneOf": [{ "required": ["id"] }, { "required": ["lat", "lon"] }]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["Point", "Polygon", "MultiPolygon"]
+                    },
+                    "coordinates": {
+                      "oneOf": [
+                        {
+                          "type": "array",
+                          "items": { "type": "number" },
+                          "minItems": 2,
+                          "maxItems": 3,
+                          "description": "Point: [lon, lat] (elevation optional)"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": { "type": "number" },
+                              "minItems": 2
+                            }
+                          },
+                          "description": "Polygon: [[[lon,lat],...]]"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": { "type": "number" },
+                                "minItems": 2
+                              }
+                            }
+                          },
+                          "description": "MultiPolygon: [[[[lon,lat],...]]]"
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "coordinates"]
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "boundary_id": { "type": "string" },
+                    "boundary_type": {
+                      "type": "string",
+                      "description": "administrative|postal_code|..."
+                    },
+                    "admin_level": {
+                      "type": "integer",
+                      "description": "OSM-style administrative level when applicable"
+                    },
+
+                    "name": { "type": "string" },
+                    "name_local": { "type": "string" },
+
+                    "country": { "type": "string" },
+                    "country_code": { "type": "string" },
+                    "state": { "type": "string" },
+                    "state_code": { "type": "string" },
+                    "county": { "type": "string" },
+                    "city": { "type": "string" },
+                    "district": { "type": "string" },
+                    "postcode": { "type": "string" },
+
+                    "centroid": {
+                      "type": "array",
+                      "items": { "type": "number" },
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "description": "Representative point [lon, lat]"
+                    },
+                    "bbox": {
+                      "type": "array",
+                      "items": { "type": "number" },
+                      "minItems": 4,
+                      "maxItems": 4,
+                      "description": "Bounding box [west, south, east, north]"
+                    }
+                  },
+                  "required": ["name"]
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            }
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "boundaries_consists_of",
+      "description": "Return child boundaries (subdivisions) for a boundary or place. Always a GeoJSON FeatureCollection of area polygons.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Parent boundary or place id"
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude"
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude"
+          },
+          "boundaries": {
+            "type": "string",
+            "enum": [
+              "administrative",
+              "postal_code",
+              "political",
+              "low_emission_zone"
+            ],
+            "description": "Boundary class for children"
+          },
+          "sublevel": {
+            "type": "integer",
+            "description": "If set, return children at this exact administrative level"
+          },
+          "geometry_level": {
+            "type": "string",
+            "enum": [
+              "point",
+              "geometry_1000",
+              "geometry_5000",
+              "geometry_10000",
+              "original"
+            ],
+            "description": "Geometry simplification level for returned boundaries"
+          },
+          "page": {
+            "type": "integer",
+            "default": 1,
+            "description": "Page number (20 results per page)"
+          },
+          "language": {
+            "type": "string",
+            "description": "Response language code, e.g. 'en', 'de', 'fr'"
+          }
+        },
+        "oneOf": [{ "required": ["id"] }, { "required": ["lat", "lon"] }]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["Point", "Polygon", "MultiPolygon"]
+                    },
+                    "coordinates": {
+                      "oneOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": { "type": "number" },
+                              "minItems": 2
+                            }
+                          },
+                          "description": "Polygon: [[[lon,lat],...]]"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": { "type": "number" },
+                                "minItems": 2
+                              }
+                            }
+                          },
+                          "description": "MultiPolygon: [[[[lon,lat],...]]]"
+                        }
+                      ]
+                    }
+                  },
+                  "required": ["type", "coordinates"]
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "boundary_id": { "type": "string" },
+                    "boundary_type": { "type": "string" },
+                    "admin_level": { "type": "integer" },
+
+                    "name": { "type": "string" },
+                    "name_local": { "type": "string" },
+
+                    "country": { "type": "string" },
+                    "country_code": { "type": "string" },
+                    "state": { "type": "string" },
+                    "state_code": { "type": "string" },
+                    "county": { "type": "string" },
+                    "city": { "type": "string" },
+                    "district": { "type": "string" },
+                    "postcode": { "type": "string" },
+
+                    "parent_id": {
+                      "type": "string",
+                      "description": "Immediate parent boundary id"
+                    },
+
+                    "centroid": {
+                      "type": "array",
+                      "items": { "type": "number" },
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "description": "Representative point [lon, lat]"
+                    },
+                    "bbox": {
+                      "type": "array",
+                      "items": { "type": "number" },
+                      "minItems": 4,
+                      "maxItems": 4,
+                      "description": "Bounding box [west, south, east, north]"
+                    }
+                  },
+                  "required": ["name"]
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            }
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "generate_isoline",
+      "description": "Compute reachability polygons by time or distance for a travel mode.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lat": { "type": "number", "description": "Latitude" },
+          "lon": { "type": "number", "description": "Longitude" },
+          "type": {
+            "type": "string",
+            "enum": ["time", "distance"],
+            "description": "Measure type"
+          },
+          "mode": {
+            "type": "string",
+            "description": "drive | truck | bicycle | walk | transit"
+          },
+          "range": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            ],
+            "description": "Seconds (time) or meters (distance). Array => multiple contours."
+          },
+          "avoid": {
+            "type": "string",
+            "description": "DSL: tolls|highways|ferries|..."
+          },
+          "traffic": {
+            "type": "string",
+            "enum": ["free_flow", "approximated"]
+          },
+          "route_type": {
+            "type": "string",
+            "enum": ["balanced", "short", "less_maneuvers"]
+          },
+          "units": { "type": "string", "enum": ["metric", "imperial"] }
+        },
+        "required": ["lat", "lon", "type", "mode", "range"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "Polygon" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": { "type": "number" },
+                              "minItems": 2
+                            }
+                          }
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "MultiPolygon" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": { "type": "number" },
+                                "minItems": 2
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    }
+                  ]
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "center_lat": { "type": "number" },
+                    "center_lon": { "type": "number" },
+                    "measure": {
+                      "type": "string",
+                      "enum": ["time", "distance"]
+                    },
+                    "range": { "type": ["integer", "string", "array"] },
+                    "mode": { "type": "string" },
+                    "id": { "type": "string" }
+                  }
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            }
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "combine_geometries",
+      "description": "Combine previously generated shapes using union or intersection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": ["union", "intersection"],
+            "description": "Geometric operation"
+          },
+          "id": {
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 2,
+            "description": "IDs of shapes to combine"
+          }
+        },
+        "required": ["operation", "id"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "Polygon" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": { "type": "number" },
+                              "minItems": 2
+                            }
+                          }
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "MultiPolygon" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": { "type": "number" },
+                                "minItems": 2
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    }
+                  ]
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "operation": {
+                      "type": "string",
+                      "enum": ["union", "intersection"]
+                    },
+                    "source_ids": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            },
+            "description": "Array of GeoJSON features"
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "get_route",
+      "description": "Calculate a route with step-by-step navigation, total distance, and travel time between one or more locations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "waypoints": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of locations or coordinates in order (start → via → destination)."
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["driving", "walking", "cycling", "transit"],
+            "description": "Travel mode for the route."
+          }
+        },
+        "required": ["waypoints"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "distance_km": { "type": "number" },
+          "duration_min": { "type": "number" },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "instruction": { "type": "string" },
+                "distance_m": { "type": "number" },
+                "duration_s": { "type": "number" }
+              }
+            }
+          },
+          "geometry": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["LineString", "MultiLineString"]
+              },
+              "coordinates": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": { "type": "number" },
+                      "minItems": 2,
+                      "maxItems": 3
+                    },
+                    "description": "LineString coordinates: [[lon, lat], ...]"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": { "type": "number" },
+                        "minItems": 2,
+                        "maxItems": 3
+                      }
+                    },
+                    "description": "MultiLineString coordinates: [[[lon, lat], ...], ...]"
+                  }
+                ]
+              }
+            },
+            "required": ["type", "coordinates"]
+          }
+        }
+      }
+    },
+    {
+      "name": "get_travel_times",
+      "description": "Compare travel distances and durations between multiple origins and destinations in a matrix format.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "origins": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of starting locations or coordinates."
+          },
+          "destinations": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "List of target locations or coordinates."
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["driving", "walking", "cycling", "transit"],
+            "description": "Travel mode for the calculations."
+          }
+        },
+        "required": ["origins", "destinations"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "matrix": {
+            "type": "array",
+            "description": "2D matrix: each row corresponds to an origin, each column to a destination.",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "distance_km": { "type": "number" },
+                  "duration_min": { "type": "number" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "postcode_search",
+      "description": "Find a postcode by text or by location. Returns up to 20 results as a GeoJSON FeatureCollection. Geometry can be centroids (point) or original postcode shapes (polygon).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "postcode": {
+            "type": "string",
+            "description": "Postcode to search for"
+          },
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Latitude"
+          },
+          "lon": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Longitude"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2, lowercase"
+          },
+          "geometry_mode": {
+            "type": "string",
+            "enum": ["point", "polygon"],
+            "default": "point",
+            "description": "Return centroid points or original postcode polygons when available"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language code, e.g. 'en', 'de', 'fr'"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "description": "1-based page index; each page returns up to 20 results"
+          }
+        },
+        "oneOf": [{ "required": ["postcode"] }, { "required": ["lat", "lon"] }]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "Point" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": { "type": "number" },
+                          "minItems": 2,
+                          "maxItems": 3,
+                          "description": "[lon, lat] (optional elevation)"
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "Polygon" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": { "type": "number" },
+                              "minItems": 2
+                            }
+                          },
+                          "description": "Polygon: [[[lon,lat],...]]"
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "MultiPolygon" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": { "type": "number" },
+                                "minItems": 2
+                              }
+                            }
+                          },
+                          "description": "MultiPolygon: [[[[lon,lat],...]]]"
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    }
+                  ]
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "postcode": { "type": "string" },
+                    "country_code": { "type": "string" },
+                    "name": {
+                      "type": "string",
+                      "description": "Optional area/label for the postcode"
+                    },
+                    "city": { "type": "string" },
+                    "state": { "type": "string" }
+                  },
+                  "required": ["postcode", "country_code"]
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            }
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "postcode_list",
+      "description": "List postcodes within a spatial/text filter. Always returns a GeoJSON FeatureCollection with up to 20 results per page.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Free-text filter (postcode, place name)"
+          },
+          "filter": {
+            "type": "string",
+            "description": "Spatial filter DSL: rect:minLon,minLat,maxLon,maxLat | circle:lon,lat,radius_m | place:ID | countrycode:XX"
+          },
+          "bias": {
+            "type": "string",
+            "description": "Bias DSL: point:lon,lat | rect:... | countrycode:XX"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2, lowercase"
+          },
+          "geometry_mode": {
+            "type": "string",
+            "enum": ["point", "polygon"],
+            "default": "point",
+            "description": "Return centroid points or original postcode polygons when available"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language code, e.g. 'en', 'de', 'fr'"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "default": 1,
+            "description": "1-based page index; each page returns up to 20 results"
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "type": { "const": "FeatureCollection" },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "const": "Feature" },
+                "geometry": {
+                  "type": "object",
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "Point" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": { "type": "number" },
+                          "minItems": 2,
+                          "maxItems": 3,
+                          "description": "[lon, lat] (optional elevation)"
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "Polygon" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": { "type": "number" },
+                              "minItems": 2
+                            }
+                          }
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": { "const": "MultiPolygon" },
+                        "coordinates": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": { "type": "number" },
+                                "minItems": 2
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "required": ["type", "coordinates"]
+                    }
+                  ]
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "postcode": { "type": "string" },
+                    "country_code": { "type": "string" },
+                    "name": { "type": "string" },
+                    "city": { "type": "string" },
+                    "state": { "type": "string" }
+                  },
+                  "required": ["postcode", "country_code"]
+                }
+              },
+              "required": ["type", "geometry", "properties"]
+            }
+          }
+        },
+        "required": ["type", "features"]
+      }
+    },
+    {
+      "name": "ip_to_location",
+      "description": "Resolve an IP (IPv4/IPv6) to approximate location and country metadata",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ip": { "type": "string", "description": "IP address (IPv4 or IPv6)" }
+        },
+        "required": ["ip"]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "ip": { "type": "string" },
+          "ip_version": { "type": "string", "enum": ["IPv4", "IPv6"] },
+
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" },
+          "accuracy_radius_m": {
+            "type": "number",
+            "description": "Approximate radius in meters"
+          },
+
+          "continent_code": { "type": "string" },
+          "continent_name": { "type": "string" },
+
+          "country_code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2"
+          },
+          "country_name": { "type": "string" },
+
+          "state": { "type": "string" },
+          "region": {
+            "type": "string",
+            "description": "Optional broader subdivision if distinct from state"
+          },
+          "city": { "type": "string" },
+
+          "time_zone": {
+            "type": "string",
+            "description": "IANA TZ, e.g. 'Europe/Berlin'"
+          },
+          "utc_offset_seconds": { "type": "integer" },
+
+          "network_cidr": {
+            "type": "string",
+            "description": "e.g. '203.0.113.0/24'"
+          },
+          "asn": { "type": "integer" },
+          "organization": { "type": "string" },
+
+          "currency_code": { "type": "string" },
+          "currency_name": { "type": "string" },
+          "currency_symbol": { "type": "string" },
+          "phone_code": { "type": "string" },
+          "capital": { "type": "string" },
+          "flag_url": { "type": "string" },
+
+          "languages": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Language names or ISO codes"
+          },
+
+          "is_proxy": { "type": "boolean" },
+          "is_vpn": { "type": "boolean" },
+          "is_tor": { "type": "boolean" },
+
+          "datasources": {
+            "type": "array",
+            "description": "Ordered list of sources used",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "attribution": { "type": "string" },
+                "license": { "type": "string" },
+                "url": { "type": "string" }
+              },
+              "required": ["name"]
+            }
+          }
+        },
+        "required": ["ip", "country_code", "latitude", "longitude"]
+      }
+    }
+  ]
+}
