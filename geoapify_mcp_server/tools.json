@@ -12,19 +12,19 @@
             "description": "Full address or place in free text, e.g. '1600 Amphitheatre Pkwy, Mountain View, CA' or 'Eiffel Tower Paris'"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Preferred response language code, e.g. 'en', 'de', 'fr'"
           },
           "filter": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Optional filter DSL, e.g. 'rect:minLon,minLat,maxLon,maxLat' or 'countrycode:US'"
           },
           "bias": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Optional bias DSL, e.g. 'point:lon,lat' or 'countrycode:US'"
           }
         },
-        "required": ["text"]
+        "required": ["text", "language", "filter", "bias"]
       },
       "outputSchema": {
         "type": "object",
@@ -74,11 +74,11 @@
             "description": "Longitude"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Preferred response language code, e.g. 'en', 'de', 'fr'"
           }
         },
-        "required": ["lat", "lon"]
+        "required": ["lat", "lon", "language"]
       },
       "outputSchema": {
         "type": "object",
@@ -189,19 +189,19 @@
             "description": "Partial input (e.g., '1600 Amph...', 'Eiffel To...')"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Preferred response language code, e.g. 'en', 'de', 'fr'"
           },
           "filter": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Optional filter DSL, e.g. 'rect:minLon,minLat,maxLon,maxLat' or 'countrycode:US'"
           },
           "bias": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Optional bias DSL, e.g. 'point:lon,lat' or 'countrycode:US'"
           }
         },
-        "required": ["text"]
+        "required": ["text", "language", "filter", "bias"]
       },
       "outputSchema": {
         "type": "object",
@@ -311,11 +311,11 @@
             "description": "Comma-separated category codes (e.g. accommodation.hotel, activity.sport_club)"
           },
           "filter": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Spatial filter, e.g. rect:minx,miny,maxx,maxy | circle:lon,lat,radius | place:city | countrycode:US"
           },
           "bias": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Bias results toward location, e.g. point:lon,lat | rect:minx,miny,maxx,maxy | countrycode:US"
           },
           "page": {
@@ -324,15 +324,15 @@
             "description": "Page number for results (20 per page)"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Language code (e.g. en, de, fr)"
           },
           "conditions": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Optional conditions (e.g. opening_hours:24/7)"
           }
         },
-        "required": ["categories"]
+        "required": ["categories", "language", "filter", "bias"]
       },
       "outputSchema": {
         "type": "object",
@@ -414,32 +414,32 @@
     },
     {
       "name": "place_details",
-      "description": "Get details for a place by id or coordinates. Returns a single GeoJSON Feature with the ORIGINAL geometry (Point, Polygon, or MultiPolygon).",
+      "description": "Get details for a place by id or coordinates - required id or lat/lon. Returns a single GeoJSON Feature with the ORIGINAL geometry (Point, Polygon, or MultiPolygon).",
       "inputSchema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Place id from places_search/forward_geocoding"
           },
           "lat": {
-            "type": "number",
+            "type": ["number", "null"],
             "minimum": -90,
             "maximum": 90,
             "description": "Latitude"
           },
           "lon": {
-            "type": "number",
+            "type": ["number", "null"],
             "minimum": -180,
             "maximum": 180,
             "description": "Longitude"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Language code, e.g. 'en', 'de', 'fr'"
           }
         },
-        "oneOf": [{ "required": ["id"] }, { "required": ["lat", "lon"] }]
+        "required": ["id", "lat", "lon", "language"]
       },
       "outputSchema": {
         "type": "object",
@@ -535,19 +535,22 @@
     },
     {
       "name": "boundaries_part_of",
-      "description": "Return parent boundaries (admin/other) for a place or boundary. Always a GeoJSON FeatureCollection of area polygons.",
+      "description": "Return parent boundaries (admin/other) for a place or boundary - required id or lat/lon. Always a GeoJSON FeatureCollection of area polygons.",
       "inputSchema": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "description": "Boundary or place id" },
+          "id": {
+            "type": ["string", "null"],
+            "description": "Boundary or place id"
+          },
           "lat": {
-            "type": "number",
+            "type": ["number", "null"],
             "minimum": -90,
             "maximum": 90,
             "description": "Latitude"
           },
           "lon": {
-            "type": "number",
+            "type": ["number", "null"],
             "minimum": -180,
             "maximum": 180,
             "description": "Longitude"
@@ -560,6 +563,7 @@
               "political",
               "low_emission_zone"
             ],
+            "default": "administrative",
             "description": "Boundary class to query"
           },
           "sublevel": {
@@ -575,14 +579,15 @@
               "geometry_10000",
               "original"
             ],
+            "default": "point",
             "description": "Geometry simplification level for returned boundaries"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Response language code, e.g. 'en', 'de', 'fr'"
           }
         },
-        "oneOf": [{ "required": ["id"] }, { "required": ["lat", "lon"] }]
+        "required": ["id", "lat", "lon", "language"]
       },
       "outputSchema": {
         "type": "object",
@@ -694,22 +699,22 @@
     },
     {
       "name": "boundaries_consists_of",
-      "description": "Return child boundaries (subdivisions) for a boundary or place. Always a GeoJSON FeatureCollection of area polygons.",
+      "description": "Return child boundaries (subdivisions) for a boundary or place - required id or lat/lon. Always a GeoJSON FeatureCollection of area polygons.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Parent boundary or place id"
           },
           "lat": {
-            "type": "number",
+            "type": ["number", "null"],
             "minimum": -90,
             "maximum": 90,
             "description": "Latitude"
           },
           "lon": {
-            "type": "number",
+            "type": ["number", "null"],
             "minimum": -180,
             "maximum": 180,
             "description": "Longitude"
@@ -722,10 +727,11 @@
               "political",
               "low_emission_zone"
             ],
+            "default": "administrative",
             "description": "Boundary class for children"
           },
           "sublevel": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "description": "If set, return children at this exact administrative level"
           },
           "geometry_level": {
@@ -737,6 +743,7 @@
               "geometry_10000",
               "original"
             ],
+            "default": "point",
             "description": "Geometry simplification level for returned boundaries"
           },
           "page": {
@@ -745,11 +752,11 @@
             "description": "Page number (20 results per page)"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Response language code, e.g. 'en', 'de', 'fr'"
           }
         },
-        "oneOf": [{ "required": ["id"] }, { "required": ["lat", "lon"] }]
+        "required": ["id", "lat", "lon", "sublevel", "language"]
       },
       "outputSchema": {
         "type": "object",
@@ -866,42 +873,34 @@
           },
           "mode": {
             "type": "string",
-            "description": "drive | truck | bicycle | walk | transit"
+            "enum": ["drive", "truck", "bicycle", "walk", "transit"],
+            "description": "Travel mode"
           },
           "range": {
-            "oneOf": [
-              {
-                "type": "integer",
-                "minimum": 1
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "array",
-                "items": {
-                  "type": "integer",
-                  "minimum": 1
-                }
-              }
-            ],
+            "type": ["integer", "array"],
             "description": "Seconds (time) or meters (distance). Array => multiple contours."
           },
           "avoid": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "DSL: tolls|highways|ferries|..."
           },
           "traffic": {
-            "type": "string",
-            "enum": ["free_flow", "approximated"]
+            "type": ["string", "null"],
+            "enum": ["free_flow", "approximated", null],
+            "description": "Only used for motorized vehicles modes, such as drive, truck, etc"
           },
           "route_type": {
             "type": "string",
-            "enum": ["balanced", "short", "less_maneuvers"]
+            "enum": ["balanced", "short", "less_maneuvers"],
+            "default": "balanced"
           },
-          "units": { "type": "string", "enum": ["metric", "imperial"] }
+          "units": {
+            "type": "string",
+            "enum": ["metric", "imperial"],
+            "default": "metric"
+          }
         },
-        "required": ["lat", "lon", "type", "mode", "range"]
+        "required": ["lat", "lon", "type", "mode", "range", "avoid", "traffic"]
       },
       "outputSchema": {
         "type": "object",
@@ -1092,7 +1091,7 @@
             "description": "Travel mode for the route."
           }
         },
-        "required": ["waypoints"]
+        "required": ["waypoints", "mode"]
       },
       "outputSchema": {
         "type": "object",
@@ -1172,7 +1171,7 @@
             "description": "Travel mode for the calculations."
           }
         },
-        "required": ["origins", "destinations"]
+        "required": ["origins", "destinations", "mode"]
       },
       "outputSchema": {
         "type": "object",
@@ -1196,28 +1195,28 @@
     },
     {
       "name": "postcode_search",
-      "description": "Find a postcode by text or by location. Returns up to 20 results as a GeoJSON FeatureCollection. Geometry can be centroids (point) or original postcode shapes (polygon).",
+      "description": "Find a postcode by text or by location - required postcode or lat/lon. Returns up to 20 results as a GeoJSON FeatureCollection. Geometry can be centroids (point) or original postcode shapes (polygon).",
       "inputSchema": {
         "type": "object",
         "properties": {
           "postcode": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Postcode to search for"
           },
           "lat": {
-            "type": "number",
+            "type": ["number", "null"],
             "minimum": -90,
             "maximum": 90,
             "description": "Latitude"
           },
           "lon": {
-            "type": "number",
+            "type": ["number", "null"],
             "minimum": -180,
             "maximum": 180,
             "description": "Longitude"
           },
           "country_code": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "ISO 3166-1 alpha-2, lowercase"
           },
           "geometry_mode": {
@@ -1227,7 +1226,7 @@
             "description": "Return centroid points or original postcode polygons when available"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Language code, e.g. 'en', 'de', 'fr'"
           },
           "page": {
@@ -1237,7 +1236,7 @@
             "description": "1-based page index; each page returns up to 20 results"
           }
         },
-        "oneOf": [{ "required": ["postcode"] }, { "required": ["lat", "lon"] }]
+        "required": ["postcode", "lat", "lon", "language"]
       },
       "outputSchema": {
         "type": "object",
@@ -1333,24 +1332,24 @@
     },
     {
       "name": "postcode_list",
-      "description": "List postcodes within a spatial/text filter. Always returns a GeoJSON FeatureCollection with up to 20 results per page.",
+      "description": "List postcodes within a spatial/text filter - required text or filter. Always returns a GeoJSON FeatureCollection with up to 20 results per page.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "text": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Free-text filter (postcode, place name)"
           },
           "filter": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Spatial filter DSL: rect:minLon,minLat,maxLon,maxLat | circle:lon,lat,radius_m | place:ID | countrycode:XX"
           },
           "bias": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Bias DSL: point:lon,lat | rect:... | countrycode:XX"
           },
           "country_code": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "ISO 3166-1 alpha-2, lowercase"
           },
           "geometry_mode": {
@@ -1360,7 +1359,7 @@
             "description": "Return centroid points or original postcode polygons when available"
           },
           "language": {
-            "type": "string",
+            "type": ["string", "null"],
             "description": "Language code, e.g. 'en', 'de', 'fr'"
           },
           "page": {
@@ -1369,7 +1368,8 @@
             "default": 1,
             "description": "1-based page index; each page returns up to 20 results"
           }
-        }
+        },
+        "required": ["text", "language", "filter", "bias", "country_code"]
       },
       "outputSchema": {
         "type": "object",

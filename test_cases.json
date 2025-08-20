@@ -5,7 +5,9 @@
       "tool": "forward_geocoding",
       "arguments": {
         "text": "Eiffel Tower, Paris",
-        "language": "en"
+        "language": "en",
+        "bias": null,
+        "filter": null
       },
       "description": "Test forward geocoding with a famous landmark",
       "expected_fields": ["results"],
@@ -16,7 +18,9 @@
       "tool": "forward_geocoding",
       "arguments": {
         "text": "1600 Amphitheatre Pkwy, Mountain View, CA",
-        "language": "en"
+        "language": "en",
+        "bias": null,
+        "filter": null
       },
       "description": "Test forward geocoding with full address",
       "expected_fields": ["results"],
@@ -27,7 +31,9 @@
       "tool": "forward_geocoding",
       "arguments": {
         "text": "restaurant",
-        "filter": "countrycode:us"
+        "filter": "countrycode:us",
+        "language": null,
+        "bias": null
       },
       "description": "Test forward geocoding with country filter",
       "expected_fields": ["results"],
@@ -38,7 +44,9 @@
       "tool": "forward_geocoding",
       "arguments": {
         "text": "Main Street",
-        "bias": "countrycode:us"
+        "bias": "countrycode:us",
+        "language": null,
+        "filter": null
       },
       "description": "Test forward geocoding with country bias",
       "expected_fields": ["results"],
@@ -69,7 +77,8 @@
       "tool": "reverse_geocoding",
       "arguments": {
         "lat": 40.7589,
-        "lon": -73.9851
+        "lon": -73.9851,
+        "language": null
       },
       "description": "Test reverse geocoding without language parameter",
       "expected_fields": ["type", "features"],
@@ -80,7 +89,8 @@
       "tool": "reverse_geocoding",
       "arguments": {
         "lat": 95,
-        "lon": 0
+        "lon": 0,
+        "language": null
       },
       "description": "Test reverse geocoding with invalid latitude (>90)",
       "expected_fields": [],
@@ -91,7 +101,8 @@
       "tool": "reverse_geocoding",
       "arguments": {
         "lat": 0,
-        "lon": 185
+        "lon": 185,
+        "language": null
       },
       "description": "Test reverse geocoding with invalid longitude (>180)",
       "expected_fields": [],
@@ -102,7 +113,9 @@
       "tool": "suggest_places",
       "arguments": {
         "text": "Times Sq",
-        "language": "en"
+        "language": "en",
+        "bias": null,
+        "filter": null
       },
       "description": "Test suggest places for partial address input",
       "expected_fields": ["type", "features"],
@@ -113,7 +126,9 @@
       "tool": "suggest_places",
       "arguments": {
         "text": "Main Street",
-        "bias": "countrycode:us"
+        "bias": "countrycode:us",
+        "language": null,
+        "filter": null
       },
       "description": "Test suggest places with country bias",
       "expected_fields": ["type", "features"],
@@ -124,7 +139,9 @@
       "tool": "suggest_places",
       "arguments": {
         "text": "cafe",
-        "filter": "rect:-74.1,40.7,-73.9,40.8"
+        "filter": "rect:-74.1,40.7,-73.9,40.8",
+        "language": null,
+        "bias": null
       },
       "description": "Test suggest places with rectangular filter",
       "expected_fields": ["type", "features"],
@@ -144,7 +161,8 @@
       "arguments": {
         "categories": "catering.restaurant",
         "filter": "circle:-73.986923,40.758896,500",
-        "language": "en"
+        "language": "en",
+        "bias": null
       },
       "description": "Test places search for restaurants near Times Square",
       "expected_fields": ["type", "features"],
@@ -157,7 +175,9 @@
         "categories": "commercial.supermarket",
         "conditions": "wheelchair,dogs",
         "filter": "circle:-0.1278,51.5074,1000",
-        "page": 2
+        "page": 2,
+        "language": null,
+        "bias": null
       },
       "description": "Test places search with accessibility conditions and pagination",
       "expected_fields": ["type", "features"],
@@ -168,7 +188,9 @@
       "tool": "place_details",
       "arguments": {
         "id": "51d4f3b68c0b0b3f59059d9b6c5de86e4940f00101f9014b56060000000000c00208",
-        "language": "en"
+        "language": "en",
+        "lat": null,
+        "lon": null
       },
       "description": "Test getting place details by place ID",
       "expected_fields": ["type", "geometry", "properties"],
@@ -180,7 +202,8 @@
       "arguments": {
         "lat": 48.8584,
         "lon": 2.2945,
-        "language": "en"
+        "language": "en",
+        "id": null
       },
       "description": "Test getting place details by coordinates",
       "expected_fields": ["type", "geometry", "properties"],
@@ -228,7 +251,9 @@
         "lon": 2.2945,
         "type": "time",
         "range": 600,
-        "mode": "walk"
+        "mode": "walk",
+        "avoid": null,
+        "traffic": null
       },
       "description": "Test isoline for 10-minute walk from Eiffel Tower",
       "expected_fields": ["type", "features"],
@@ -242,7 +267,9 @@
         "lon": -73.9851,
         "type": "distance",
         "range": 5000,
-        "mode": "drive"
+        "mode": "drive",
+        "avoid": null,
+        "traffic": null
       },
       "description": "Test isoline for 5km drive distance",
       "expected_fields": ["type", "features"],
@@ -268,7 +295,9 @@
       "arguments": {
         "postcode": "10001",
         "country_code": "us",
-        "language": "en"
+        "language": "en",
+        "lat": null,
+        "lon": null
       },
       "description": "Test postcode search for NYC ZIP code",
       "expected_fields": ["type", "features"],
@@ -280,7 +309,9 @@
       "arguments": {
         "text": "New York",
         "language": "en",
-        "page": 1
+        "country_code": null,
+        "bias": null,
+        "filter": null
       },
       "description": "Test listing postcodes for Manhattan",
       "expected_fields": ["type", "features"],
@@ -302,7 +333,8 @@
       "arguments": {
         "lat": 48.8566,
         "lon": 2.3522,
-        "language": "en"
+        "language": "en",
+        "id": null
       },
       "description": "Test finding administrative boundaries for Paris location",
       "expected_fields": ["type", "features"],
@@ -314,7 +346,10 @@
       "arguments": {
         "id": "51d3f5b68c0b0b3f59059d9b6c5de86e4940f00101f9014b56060000000000c00208",
         "page": 1,
-        "language": "en"
+        "language": "en",
+        "lat": null,
+        "lon": null,
+        "sublevel": null
       },
       "description": "Test finding sub-boundaries of an administrative area with pagination",
       "expected_fields": ["type", "features"],
