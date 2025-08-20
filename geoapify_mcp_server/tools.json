@@ -1236,7 +1236,7 @@
             "description": "1-based page index; each page returns up to 20 results"
           }
         },
-        "required": ["postcode", "lat", "lon", "language"]
+        "required": ["postcode", "lat", "lon", "language", "country_code"]
       },
       "outputSchema": {
         "type": "object",
