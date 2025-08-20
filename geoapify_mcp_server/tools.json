@@ -567,7 +567,7 @@
             "description": "Boundary class to query"
           },
           "sublevel": {
-            "type": "integer",
+            "type": ["integer", "null"],
             "description": "If set, return parents only up to this administrative level (e.g., 2=country, 4=state/region)"
           },
           "geometry_level": {
