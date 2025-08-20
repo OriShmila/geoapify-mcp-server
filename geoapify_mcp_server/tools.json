@@ -877,7 +877,22 @@
             "description": "Travel mode"
           },
           "range": {
-            "type": ["integer", "array"],
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            ],
             "description": "Seconds (time) or meters (distance). Array => multiple contours."
           },
           "avoid": {
