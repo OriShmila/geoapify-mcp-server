@@ -332,7 +332,7 @@
             "description": "Optional conditions (e.g. opening_hours:24/7)"
           }
         },
-        "required": ["categories", "language", "filter", "bias"]
+        "required": ["categories", "language", "filter", "bias", "conditions"]
       },
       "outputSchema": {
         "type": "object",
@@ -587,7 +587,7 @@
             "description": "Response language code, e.g. 'en', 'de', 'fr'"
           }
         },
-        "required": ["id", "lat", "lon", "language"]
+        "required": ["id", "lat", "lon", "language", "sublevel"]
       },
       "outputSchema": {
         "type": "object",

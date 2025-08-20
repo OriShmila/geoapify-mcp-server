@@ -162,7 +162,8 @@
         "categories": "catering.restaurant",
         "filter": "circle:-73.986923,40.758896,500",
         "language": "en",
-        "bias": null
+        "bias": null,
+        "conditions": null
       },
       "description": "Test places search for restaurants near Times Square",
       "expected_fields": ["type", "features"],
@@ -334,7 +335,8 @@
         "lat": 48.8566,
         "lon": 2.3522,
         "language": "en",
-        "id": null
+        "id": null,
+        "sublevel": null
       },
       "description": "Test finding administrative boundaries for Paris location",
       "expected_fields": ["type", "features"],
